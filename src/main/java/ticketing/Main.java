@@ -4,6 +4,7 @@ package ticketing;
 import ticketing.utils.Constants;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -35,10 +36,29 @@ public class Main {
                 case "Availability":
                     availability();
                     break;
+                case "Book":
+                    book();
+                    break;
+                case "Help":
+                    System.out.println(Constants.COMMANDS_LIST);
+                    break;
                 default:
-                    System.out.println(Constants.INVALID_COMMAND_HELP);
+                    System.out.println(Constants.INVALID);
             }
 
+        }
+    }
+
+    private static void book() {
+        try {
+            int showNumber = sc.nextInt();
+            String phone = sc.next();
+            String[] seatList = sc.next().split(",");
+            sqLiteJDBC.bookSeat(showNumber, phone, seatList);
+
+        } catch (SQLException | InputMismatchException | IllegalStateException e) {
+            System.out.println("Invalid");
+            sc.nextLine();
         }
     }
 
