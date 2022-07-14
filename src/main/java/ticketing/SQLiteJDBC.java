@@ -5,6 +5,8 @@ import ticketing.utils.SqlConstants;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -77,6 +79,37 @@ public class SQLiteJDBC {
             }
         } catch (SQLException e) {
             System.out.println("Error encountered");
+        }
+    }
+
+    public ResultSet fetchShow(int showNumber) {
+        ResultSet rs = null;
+        try {
+            c = DriverManager.getConnection(driverConnection);
+            ps = c.prepareStatement(SqlConstants.FETCH_SHOW_SQL);
+            ps.setInt(1, showNumber);
+            rs = ps.executeQuery();
+
+            print(rs);
+        } catch (SQLException e) {
+            System.out.println("Error encountered");
+            e.printStackTrace();
+        } finally {
+            close(ps);
+            return rs;
+        }
+    }
+
+    private static void print(ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+        while (rs.next()) {
+            for (int i = 1; i <= columnsNumber; i++) {
+                if (i > 1) System.out.print(",  ");
+                String columnValue = rs.getString(i);
+                System.out.print(rsmd.getColumnName(i) + " " + columnValue);
+            }
+            System.out.println("");
         }
     }
 }

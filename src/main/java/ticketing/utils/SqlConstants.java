@@ -22,4 +22,11 @@ public interface SqlConstants {
             "CHAR(15) NOT NULL," +
             " show_id INT NOT NULL " +
             ")";
+    public static final String FETCH_SHOW_SQL =
+        "SELECT t.* FROM show s " +
+            "LEFT JOIN ticket t " +
+            "ON s.id = t.show_id " +
+            "WHERE " +
+            "s.id = ? " +
+            ";";
 }

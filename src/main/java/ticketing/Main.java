@@ -3,6 +3,7 @@ package ticketing;
 
 import ticketing.utils.Constants;
 
+import java.sql.ResultSet;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -25,6 +26,9 @@ public class Main {
             System.out.print(Constants.COMMAND_PREFIX);
             String instruction = sc.next();
             switch (instruction) {
+                case "View":
+                    view();
+                    break;
                 case "Setup":
                     setup();
                     break;
@@ -35,6 +39,22 @@ public class Main {
         }
     }
 
+    private static void view() {
+        try {
+            int showNumber = sc.nextInt();
+            ResultSet rs = sqLiteJDBC.fetchShow(showNumber);
+            if (rs == null) {
+                System.out.println("Empty result");
+            } else {
+            }
+
+        } catch (InputMismatchException | IllegalStateException  e) {
+            System.out.println("Invalid");
+            sc.nextLine();
+        }
+
+    }
+
     private static void setup() {
         try {
             int showNumber = sc.nextInt();
@@ -43,7 +63,7 @@ public class Main {
             int cancelWindowInSec = sc.nextInt() * 60;
             sqLiteJDBC.setupNewShow(showNumber, rows, seatsPerRow, cancelWindowInSec);
 
-        } catch (InputMismatchException e) {
+        } catch (InputMismatchException | IllegalStateException e) {
             System.out.println("Invalid");
             sc.nextLine();
         }
