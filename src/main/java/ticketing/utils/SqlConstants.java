@@ -17,7 +17,8 @@ public interface SqlConstants {
             " status  CHAR(20)     NOT NULL, " +
             " seat_no  CHAR(4)  NOT NULL, " +
             " buyer_phone CHAR(15) NOT NULL," +
-            " show_id INT NOT NULL " +
+            " show_id INT NOT NULL, " +
+            " transaction_id TEXT NOT NULL " +
             ")";
     public static final String FETCH_SHOW_SQL =
         "SELECT t.* FROM show s " +
@@ -45,12 +46,14 @@ public interface SqlConstants {
             "status, " +
             "seat_no, " +
             "buyer_phone, " +
-            "show_id" +
+            "show_id," +
+            "transaction_id" +
             ") VALUES (" +
             "?, " +
             "?, " +
             "?, " +
             "?, " +
-            "? " +
+            "?, " +
+            "?  " +
             ");";
 }

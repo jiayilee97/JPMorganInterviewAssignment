@@ -197,6 +197,9 @@ public class SQLiteJDBC {
             ps = c.prepareStatement(SqlConstants.BOOK_SEAT_SQL);
             c.setAutoCommit(false);
 
+            // same transaction id since it's a single transaction
+            String transactionId = String.valueOf((long) Math.floor(Math.random() * 9_000_000_000L) + 1_000_000_000L); // 10 digit random number
+
             // Note: running query inside a loop is anti-pattern, thus batch update is used instead
             for (String seat : seatList) {
                 if ((seat.charAt(0) - 'A') > rows || Integer.parseInt(seat.substring(1)) > seatsPerRow) throw new ArrayIndexOutOfBoundsException();
@@ -205,6 +208,7 @@ public class SQLiteJDBC {
                 ps.setString(3, seat);
                 ps.setString(4, phone);
                 ps.setInt(5, showNumber);
+                ps.setString(6, transactionId);
                 ps.addBatch();
             }
             ps.executeBatch();
