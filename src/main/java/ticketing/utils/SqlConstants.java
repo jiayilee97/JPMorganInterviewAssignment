@@ -56,4 +56,24 @@ public interface SqlConstants {
             "?, " +
             "?  " +
             ");";
+    public static final String CANCEL_SEAT_SQL =
+        "UPDATE ticket SET " +
+            "status = ? " +
+            "WHERE " +
+            "buyer_phone = ? AND " +
+            "transaction_id = ? AND " +
+            "status = ? " +
+            ";";
+    public static final String FETCH_SEATS_TO_BE_CANCELLED_SQL =
+        "SELECT t.buy_date, t.show_id FROM ticket t " +
+            "WHERE " +
+            "buyer_phone = ? AND " +
+            "transaction_id = ? AND " +
+            "status = ? " +
+            ";";
+    public static final String FETCH_CANCEL_WINDOW_BY_SHOW_ID_SQL =
+        "SELECT s.cancel_window_secs FROM show s " +
+            "WHERE " +
+            "s.id = ? " +
+            ";";
 }

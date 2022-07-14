@@ -10,6 +10,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -197,13 +200,14 @@ public class SQLiteJDBC {
             ps = c.prepareStatement(SqlConstants.BOOK_SEAT_SQL);
             c.setAutoCommit(false);
 
-            // same transaction id since it's a single transaction
+            // same transaction id and date since it's a single transaction
             String transactionId = String.valueOf((long) Math.floor(Math.random() * 9_000_000_000L) + 1_000_000_000L); // 10 digit random number
+            String currentTime = Instant.now().with(ChronoField.NANO_OF_SECOND,0).toString();
 
             // Note: running query inside a loop is anti-pattern, thus batch update is used instead
             for (String seat : seatList) {
                 if ((seat.charAt(0) - 'A') > rows || Integer.parseInt(seat.substring(1)) > seatsPerRow) throw new ArrayIndexOutOfBoundsException();
-                ps.setString(1, "2020:01:01 00:00:00");
+                ps.setString(1, currentTime);
                 ps.setString(2, TicketStatus.BOUGHT.name());
                 ps.setString(3, seat);
                 ps.setString(4, phone);
@@ -222,6 +226,55 @@ public class SQLiteJDBC {
         } finally {
             close(ps);
         }
+
+    }
+
+    public void cancel(String transactionId, String phone) {
+        try {
+            c = DriverManager.getConnection(driverConnection);
+
+            // fetch seats to be cancelled
+            ps = c.prepareStatement(SqlConstants.FETCH_SEATS_TO_BE_CANCELLED_SQL);
+            ps.setString(1, phone);
+            ps.setString(2, transactionId);
+            ps.setString(3, TicketStatus.BOUGHT.name());
+            rs = ps.executeQuery();
+
+            // throw error if not within cancellation window
+            String buyDateStr = rs.getString("buy_date");
+            int showId = rs.getInt("show_id");
+            if(buyDateStr == null || buyDateStr.isEmpty()) {
+                throw new InternalError("No buy date");
+            }
+
+            // fetch cancellation window in secs
+            ps = c.prepareStatement(SqlConstants.FETCH_CANCEL_WINDOW_BY_SHOW_ID_SQL);
+            ps.setInt(1, showId);
+            int cancelWindowSecs = ps.executeQuery().getInt("cancel_window_secs");
+
+            Instant buyDate = Instant.parse(buyDateStr);
+            if (buyDate.plusSeconds(cancelWindowSecs).isBefore(Instant.now())) {
+                throw new InternalError("Cancellation window has closed.");
+            }
+
+            // book seats
+            ps = c.prepareStatement(SqlConstants.CANCEL_SEAT_SQL);
+
+            ps.setString(1, TicketStatus.CANCELLED.name());
+            ps.setString(2, phone);
+            ps.setString(3, transactionId);
+            ps.setString(4, TicketStatus.BOUGHT.name());
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Error encountered");
+            e.printStackTrace();
+        } catch (DateTimeParseException | InternalError e) {
+            System.out.println(e.getMessage());
+        } finally {
+            close(ps);
+        }
+
 
     }
 }

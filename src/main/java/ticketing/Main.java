@@ -39,6 +39,9 @@ public class Main {
                 case "Book":
                     book();
                     break;
+                case "Cancel":
+                    cancel();
+                    break;
                 case "Help":
                     System.out.println(Constants.COMMANDS_LIST);
                     break;
@@ -46,6 +49,18 @@ public class Main {
                     System.out.println(Constants.INVALID);
             }
 
+        }
+    }
+
+    private static void cancel() {
+        try {
+            String transactionId = sc.next();
+            String phone = sc.next();
+            sqLiteJDBC.cancel(transactionId, phone);
+
+        } catch (InputMismatchException | IllegalStateException e) {
+            System.out.println("Invalid");
+            sc.nextLine();
         }
     }
 
