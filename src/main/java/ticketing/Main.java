@@ -1,13 +1,11 @@
 package ticketing;
 
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import ticketing.utils.Constants;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-@SpringBootApplication
 public class Main {
 
     static Scanner sc;
