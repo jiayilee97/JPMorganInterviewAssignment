@@ -32,11 +32,28 @@ public class Main {
                 case "Setup":
                     setup();
                     break;
+                case "Availability":
+                    availability();
+                    break;
                 default:
                     System.out.println(Constants.INVALID_COMMAND_HELP);
             }
 
         }
+    }
+
+    private static void availability() {
+        try {
+            int showNumber = sc.nextInt();
+            ResultSet rs = sqLiteJDBC.fetchAvailability(showNumber);
+            if (rs == null) {
+                System.out.println("Empty result");
+            }
+        } catch (InputMismatchException | IllegalStateException  e) {
+            System.out.println("Invalid");
+            sc.nextLine();
+        }
+
     }
 
     private static void view() {
