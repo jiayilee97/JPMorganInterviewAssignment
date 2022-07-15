@@ -43,7 +43,7 @@ View 4
 * `Availability` To list all available seat numbers for a show. E,g A1, F4 etc
 ```$xslt
 // View available seats under show number 4
-* Availability 4
+Availability 4
 ```
 
 * `Book` To book a ticket. This must generate a unique ticket # and display
