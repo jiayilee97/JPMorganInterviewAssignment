@@ -63,3 +63,6 @@ Cancel 3901306770 82341234
 2) Assume max seats per row is 10 and max rows are 26. Example seat number A1,  H5 etc. The “Add” command for admin must ensure rows cannot be added beyond the upper limit of 26.
 3) After booking, User can cancel the seats within a time window of 2 minutes (configurable).   Cancellation after that is not allowed.
 4) Only one booking per phone# is allowed per show.
+
+### Resources
+The entity-relationship diagram is available within this repository. It is named `TicketSystemEntityRelation` and can be opened inside <https://draw.io/>. 
