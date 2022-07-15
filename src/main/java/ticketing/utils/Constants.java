@@ -12,4 +12,6 @@ public interface Constants {
         "<Phone#>\n" + "\tTo cancel a ticket";
     public static final String COMMAND_PREFIX = "> ";
     public static final String INVALID = "Invalid command. Type 'Help' for list of commands.";
+    public static final int MAX_SEATS_PER_ROW = 10;
+    public static final int MAX_ROWS = 26;
 }

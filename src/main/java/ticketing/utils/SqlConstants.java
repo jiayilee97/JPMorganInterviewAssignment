@@ -76,4 +76,18 @@ public interface SqlConstants {
             "WHERE " +
             "s.id = ? " +
             ";";
+    public static final String FETCH_TICKET_BY_PHONE_AND_SHOW_SQL =
+        "SELECT t.* FROM ticket t " +
+            "WHERE " +
+            "t.show_id = ? AND " +
+            "t.buyer_phone = ? AND " +
+            "t.status = ?" +
+            ";";
+    public static final String FETCH_TICKET_BY_SEAT_AND_SHOW_SQL =
+        "SELECT t.* FROM ticket t " +
+            "WHERE " +
+            "t.show_id = ? AND " +
+            "t.seat_no = ? AND " +
+            "t.status = ?" +
+            ";";
 }

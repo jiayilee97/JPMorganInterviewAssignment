@@ -113,11 +113,19 @@ public class Main {
             int rows = sc.nextInt();
             int seatsPerRow = sc.nextInt();
             int cancelWindowInSec = sc.nextInt() * 60;
+            if (rows > Constants.MAX_ROWS) {
+                throw new InternalError("Max rows is " + Constants.MAX_ROWS);
+            }
+            if (seatsPerRow > Constants.MAX_SEATS_PER_ROW) {
+                throw new InternalError("Max seats per row is " + Constants.MAX_SEATS_PER_ROW);
+            }
             sqLiteJDBC.setupNewShow(showNumber, rows, seatsPerRow, cancelWindowInSec);
 
         } catch (InputMismatchException | IllegalStateException e) {
             System.out.println("Invalid");
             sc.nextLine();
+        } catch (InternalError e) {
+            System.out.println(e.getMessage());
         }
     }
 }

@@ -13,7 +13,9 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -186,8 +188,42 @@ public class SQLiteJDBC {
     }
 
     public void bookSeat(int showNumber, String phone, String[] seatList) throws SQLException {
+        String transactionId = null;
         try {
             c = DriverManager.getConnection(driverConnection);
+
+            // only 1 booking per phone per show
+            ps = c.prepareStatement(SqlConstants.FETCH_TICKET_BY_PHONE_AND_SHOW_SQL);
+            ps.setInt(1, showNumber);
+            ps.setString(2, phone);
+            ps.setString(3, TicketStatus.BOUGHT.name());
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                String existingTransactionId = rs.getString("transaction_id");
+                if (null != existingTransactionId && !existingTransactionId.isEmpty()) {
+                    throw new InternalError("Found an existing booking. Only 1 booking per phone per show allowed.");
+                }
+            }
+
+            // check if seat is booked
+            ps = c.prepareStatement(SqlConstants.FETCH_TICKET_BY_SEAT_AND_SHOW_SQL);
+            List<String> forbiddenSeats = new ArrayList<>();
+            for (String seat : seatList) {
+                ps.setInt(1, showNumber);
+                ps.setString(2, seat);
+                ps.setString(3, TicketStatus.BOUGHT.name());
+                rs = ps.executeQuery();
+
+                if(!rs.next()) continue;
+                String seatNo = rs.getString("seat_no");
+                if(seatNo == null) continue;
+                forbiddenSeats.add(seatNo);
+            }
+            if (!forbiddenSeats.isEmpty()) {
+                throw new InternalError("Booking unsuccessful. These seats are booked: " + String.join(",",
+                    forbiddenSeats));
+            }
+
 
             // fetch rows and seats per row
             ps = c.prepareStatement(SqlConstants.FETCH_SHOW_TOTAL_SEATS_SQL);
@@ -201,7 +237,7 @@ public class SQLiteJDBC {
             c.setAutoCommit(false);
 
             // same transaction id and date since it's a single transaction
-            String transactionId = String.valueOf((long) Math.floor(Math.random() * 9_000_000_000L) + 1_000_000_000L); // 10 digit random number
+            transactionId = String.valueOf((long) Math.floor(Math.random() * 9_000_000_000L) + 1_000_000_000L); // 10 digit random number
             String currentTime = Instant.now().with(ChronoField.NANO_OF_SECOND,0).toString();
 
             // Note: running query inside a loop is anti-pattern, thus batch update is used instead
@@ -217,12 +253,15 @@ public class SQLiteJDBC {
             }
             ps.executeBatch();
             c.commit();
+            System.out.println("Success! Transaction id is " + transactionId);
 
         } catch (SQLException e) {
             System.out.println("Error encountered");
             e.printStackTrace();
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Seat is non-existent. Rejected.");
+        } catch (InternalError e) {
+            System.out.println(e.getMessage());
         } finally {
             close(ps);
         }
@@ -239,6 +278,9 @@ public class SQLiteJDBC {
             ps.setString(2, transactionId);
             ps.setString(3, TicketStatus.BOUGHT.name());
             rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new InternalError("No booking found. Nothing cancelled.");
+            }
 
             // throw error if not within cancellation window
             String buyDateStr = rs.getString("buy_date");
@@ -265,6 +307,7 @@ public class SQLiteJDBC {
             ps.setString(3, transactionId);
             ps.setString(4, TicketStatus.BOUGHT.name());
             ps.executeUpdate();
+            System.out.println("Cancelled successfully.");
 
         } catch (SQLException e) {
             System.out.println("Error encountered");
